@@ -1,0 +1,756 @@
+﻿	<!--
+    	Gerenciador de Arquivos 1.0
+    	Programador: Erwin Rommel O.Vaz
+    	Email:e.rom.br@gmail.com
+		Site: http://www.trevotecnologia.com.br
+	-->
+    <!DOCTYPE html>
+	<html lang="pt-br">
+	<head>
+		<title>File Reader</title>
+		<meta charset="utf-8"/>	
+		<style type = "text/css">
+		table, td, th {
+		  border: 0px solid black;
+		} 
+		</style>
+		<script src="jquery-3.2.1.min.js" type="text/javascript"></script>		
+		<script>
+					
+			var totalRegistros = 0;
+			var totalRegistrosDuplicados=0;
+			var textos = ['Se inscreva em nosso canal do youtube @trevotecnologia e deixe aquele joinha!','Visite nosso site no endereço www.trevotecnologia.com.br'];
+			
+			/*
+			A função Math.floor(x) retorna o menor número inteiro dentre o número "x".
+			A função Math.ceil(x) retorna o menor número inteiro maior ou igual a "x".
+			A função Math.random() é usado para retornar um número pseudoaleatório de ponto flutuante entre 0 e 1.
+			O método setInterval nos permite executar uma função repetidamente em um espaço de tempo definido.
+			*/
+
+			let timerId = setInterval(
+			function(){
+				if($("#mensagem").text().length==0){
+					let i =Math.random();
+					if(i<0.5){
+						i =Math.floor(i)
+					}
+					else{
+						i= Math.ceil(i)
+					}
+					$('#mensagem').html("<marquee bgcolor=white direction=left> "+textos[i]+" </marquee>");
+				}
+			},10000);
+				
+			/*
+			O método indexOf() retorna o índice da primeira ocorrência do valor fornecido em searchValue, começando a busca a partir de fromIndex. Retorna -1 se o valor não for encontrado.
+			O método charAt() retorna o caractere especificado a partir de uma string.
+			O método substring() retorna o trecho de uma string de acordo com os números informados por parâmetro
+			O método search() Retorna a posição da primeira ocorrência de uma string em uma string:
+			*/
+
+			function removerAcentos(strToReplace){ 
+
+				let strSChar    = "áàãâäéèêëíìîïóòõôöúùûüçÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÖÔÚÙÛÜÇ';,.&#";
+				let strNoSChars = "aaaaaeeeeiiiiooooouuuucAAAAAEEEEIIIIOOOOOUUUUC';  &#";
+				let newStr = "";
+				for (let i = 0; i < strToReplace.length; i++) {
+					if (strSChar.indexOf(strToReplace.charAt(i)) != -1) {
+						newStr += strNoSChars.substr(strSChar.search(strToReplace.substr(i, 1)), 1);
+						
+					}else{
+						newStr += strToReplace.substr(i, 1);
+						
+					}
+				}
+				return newStr;
+
+			};
+			/*
+			Essa funcao vai me retornar todos os nomes com ao menos 3 letras diferentes!
+			*/
+			
+			function similaridadeNomeReal(strToSearch){
+			
+				let strSChar = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+				let qtdeOcorr = 0;
+				let posicaoAnterior = "";
+				let posicaoAtual = "";
+				for (let i = 0; i < strToSearch.length; i++) {
+					let posicao = strSChar.indexOf(strToSearch.charAt(i));
+					
+					if (posicao != -1) {
+						posicaoAnterior = posicao;
+						
+						if(posicaoAtual!=posicaoAnterior){
+							qtdeOcorr++;
+						}
+						
+						posicaoAtual = posicaoAnterior;
+					}
+				}
+				
+				if(qtdeOcorr >= 3){
+					qtdeOcorr = 0;
+					return true;
+				}else{
+					qtdeOcorr = 0;
+					return false;
+				}
+			
+			}
+			function exibeSplashScreen(){
+				
+				$('#log').empty();
+				let strDiv = "<div style='margin: 10px;padding:20px;background: #000;'><font color='#FFFFFF'><pre>";
+			
+
+				strDiv += "	-=London Bus=-";
+
+
+				strDiv += "				    .---------------------------.<br>";
+				strDiv += "						   /,--..---..---..---..---..--. `.<br>";
+				strDiv += "						  //___||___||___||___||___| |___\_|<br>";
+				strDiv += "						  [j__ ######################## [_|<br>";
+				strDiv += "					    	      \============================|<br>";
+				strDiv += "						  .==|  |'''||'''||'''||'''| |'''||<br>";
+				strDiv += "						 /======'---''---''---''---'=|  =||<br>";
+				strDiv += "						 |____    []*          ____  | ==||<br>";
+				strDiv += "						 //  \\               //  \\   |===|| <br>"; 
+				strDiv += "						  '\__/'---------------'\__/'-+---+'<br>";
+
+				strDiv += "</pre></font></div><br />";
+				$('#log').html(strDiv);
+				let strDivChave = "<div style='margin: 0px;padding:0px;background: #000;'><font color='#FFFFFF' size='4'><pre>";
+				strDivChave += "<b>Chave:</b>";
+				strDivChave += "<select id='chave' onChange='Regras.insereRegras(this.value);abortar();'>";
+				rg = (Regras.regras[0].chave=="rg") ? 'selected' : '';
+				nome = (Regras.regras[0].chave=="nome") ? 'selected' : '';
+				strDivChave += "<option value='rg' "+rg+">RG</option>";
+				strDivChave += "<option value='nome' "+nome+">NOME</option>";
+				strDivChave += "</select></pre></font></div>";
+				$('#log').append(strDivChave);
+				
+			}
+			
+			function carregaArquivo(){
+				
+				if(Arquivo.filtroPassageiros.length>0){
+					Arquivo.printPassageiros();
+				}else{
+					$('#log').empty();
+					$('#mensagem').html("");
+					$('#log').html(
+					"<form name='fileRead' id='fileRead' >"+
+					"<table border='0' width='100%' border='0' cellpadding='0' cellspacing='0' align='left'>"+
+					"<tr>"+
+					"<td colspan='2' align='left'><font color='#FFFFFF' size='2' face='arial'><b>Carregar Arquivo Texto:</b></font></td>"+
+					"</tr>"+
+					"<tr><td colspan='2'>   </td>"+
+					"</tr>"+
+					"<tr>"+
+					"<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'><input type='file' id='txtfiletoread' /><br /></font></td>"+
+					"</tr>"+
+					"</table>"+
+					"</form>");
+
+					/*
+					Verifica o suporte ao File API
+					*/
+					if (window.File && window.FileReader && window.FileList && window.Blob) {
+
+						let fileSelected = document.getElementById('txtfiletoread');
+						fileSelected.addEventListener('change', function (e) {
+							
+							let fileExtension = /text.*/;
+							let fileTobeRead = fileSelected.files[0];
+							if (fileTobeRead.type.match(fileExtension)) {
+								
+								$("#mensagem").html("");
+								/*
+								simulando uma thread...
+								*/
+								setTimeout(
+								function(){
+									$("#loader").attr('src', 'hairball-loader.gif');
+									$('#log').empty();
+									$('#mensagem').html("Carregando e processando requisitos do Arquivo....Aguarde...");
+								},0);
+							
+								let fileReader = new FileReader();
+								fileReader.onload = function (e) {
+								
+									let fileArr = e.target.result.split('\n');
+									
+									for (let i=0; i <= fileArr.length - 1; i++) {
+									
+										totalRegistros++;
+										var items = fileArr[i].split(";");
+										
+										if(Regras.regras[0].chave=='rg'){
+										
+											if(items[5].length != 0 && similaridadeNomeReal(items[4].toUpperCase())){  
+												Arquivo.insereLinha(fileArr[i]);
+											}else{
+												Arquivo.registrosInvalidos.push(fileArr[i]);
+											}
+											
+										}else if(Regras.regras[0].chave=='nome'){
+											
+											if(items[4].length != 0 && similaridadeNomeReal(items[4].toUpperCase())){ 
+												Arquivo.insereLinha(fileArr[i]);
+											}else{
+												Arquivo.registrosInvalidos.push(fileArr[i]);
+											}
+										
+										}else{
+											//console.log(Regras.regras[0].chave);
+										}
+									}
+									
+									let totaldeRegistrossemoTitulo = totalRegistros-1;
+
+									$('#log').append("Arquivo da Linha de ônibus "+items[1]+" carregado com Sucesso!<br>");
+									$('#log').append("Quantidade de Linhas do arquivo: "+totaldeRegistrossemoTitulo+"<br>");
+									$('#linhaBus').html("<font color='black' size='2' face='arial'><b>"+items[1].toUpperCase()+"</b><br></font>");
+									$('#qtdeRegistros').html("<font color='black' size='2' face='arial'><b>"+totaldeRegistrossemoTitulo+"</b></font>");
+									
+									$('#log').append("Quantidade de Linhas Inválidas, "+Arquivo.registrosInvalidos.length+"<br>");
+									$('#invalidos').html("<a id='registrosInvalidos' onClick='Arquivo.printRegistrosInvalidos();' alt='Clique para visualizar os registro inválidos' title='Clique para visualizar os registro inválidos' style='cursor:pointer; cursor:hand;'><font color='red' size='2' face='arial'><b>"+Arquivo.registrosInvalidos.length+"</b></font></a>");
+								
+									Arquivo.eliminaRegistrosDuplicados();
+					
+								}
+								fileReader.readAsBinaryString(fileTobeRead, 'UTF-8');
+							}
+							else {
+								$("#mensagem").html("Por favor selecione arquivo texto!");
+								setTimeout(
+								function(){
+									$("#loader").attr('src', 'ic_launcher.jpg');
+								},0);
+							}
+
+						}, false);
+					}
+					else {
+						$("#mensagem").html("Arquivo(s) não suportado(s)");
+						setTimeout(
+						function(){
+							$("#loader").attr('src', 'ic_launcher.jpg');
+						},0);
+					}
+				}
+			
+			}
+			var Regras = {
+				"regras" : [],
+				"process" : function() {
+					
+				 },
+				"id" : 0,
+				"destroy" : function(){
+					Regras.retira();
+				},
+				"insereRegras" : function(elemento){
+				
+					Regras.destroy();
+					let _insereRegras = this;
+					_insereRegras.chave = elemento;
+					Regras.regras.push(_insereRegras);
+					$('#mensagem').html("Chave alterada para: "+elemento+" ");
+					_insereRegras = null;
+					
+				},
+				"retira" : function(){
+					while(Regras.tamanho()>0){
+						Regras.regras.pop();
+					}
+				},	
+				"tamanho" : function(){
+					return Regras.regras.length;
+				}
+			}
+			
+			var Arquivo = {
+			
+				"linhas" : [],
+				"registrosValidos" : [],
+				"registrosInvalidos" : [],
+				"passageiros" : [],
+				"filtroPassageiros" : [],
+				"destroy" : function() {
+					while(Arquivo.linhas.length>0){
+						Arquivo.linhas.pop();
+					}
+					while(Arquivo.registrosValidos.length>0){
+						Arquivo.registrosValidos.pop();
+					}
+					while(Arquivo.registrosInvalidos.length>0){
+						Arquivo.registrosInvalidos.pop();
+					}
+					while(Arquivo.passageiros.length>0){
+						Arquivo.passageiros.pop();
+					}
+					while(Arquivo.filtroPassageiros.length>0){
+						Arquivo.filtroPassageiros.pop();
+					}
+				 },
+				"id" : 0,
+				"insereLinha" : function(elemento){
+					
+					Arquivo.linhas.push(elemento);
+					
+				},
+				"eliminaRegistrosDuplicados": function(){
+					
+					$.each(Arquivo.linhas, function(i, elemento){
+						if($.inArray(elemento, Arquivo.registrosValidos) === -1) Arquivo.registrosValidos.push(elemento);
+					});
+					
+					Arquivo.carregaPassageiros();
+				
+				},
+				"carregaPassageiros": function(){
+				
+					$.each(Arquivo.registrosValidos, function(i, elemento){
+						let _partesElemento = this;
+						let items = elemento.split(";");
+						_partesElemento.nome = removerAcentos(items[4]);
+						_partesElemento.rg = removerAcentos(items[5]);
+						_partesElemento.data = items[0];
+						_partesElemento.horario = items[3];
+						_partesElemento.linha = items[1];
+						_partesElemento.tipoPassagem = items[7];
+						Arquivo.passageiros.push(_partesElemento);			
+						_partesElemento = null;
+						items = null;
+						
+					});
+					
+					Arquivo.filtrarPassageiros();
+					
+				},
+				"filtrarPassageiros" : function(){
+			
+					/*2ª Regra da Chave*/
+					if(Regras.regras[0].chave=='rg'){
+										
+						Arquivo.passageiros.forEach(function (hash) {
+							return function (a) {
+								if (!hash[a.rg]) {
+									hash[a.rg] = { rg: a.rg, activities: []};
+									Arquivo.filtroPassageiros.push(hash[a.rg]);
+								}
+								hash[a.rg].activities.push({ nome: a.nome, data: a.data, horario: a.horario, linha: a.linha, tipoPassagem: a.tipoPassagem});
+							};
+						}(Object.create(null)));
+						
+					}else if(Regras.regras[0].chave=='nome'){
+					
+						Arquivo.passageiros.forEach(function (hash) {
+							return function (a) {
+								if (!hash[a.nome]) {
+									hash[a.nome] = { nome: a.nome, activities: []};
+									Arquivo.filtroPassageiros.push(hash[a.nome]);
+								}
+								hash[a.nome].activities.push({ rg: a.rg, data: a.data, horario: a.horario, linha: a.linha, tipoPassagem: a.tipoPassagem});
+							};
+						}(Object.create(null)));
+					
+					}else{
+						//nothing
+					}
+					
+					Arquivo.ordenaPassageirosTotalViagens();
+					
+					totalRegistrosDuplicados = parseFloat(Arquivo.linhas.length-1) - parseFloat(Arquivo.registrosValidos.length);
+					$('#duplicados').html("<font color='black' size='2' face='arial'><b>"+totalRegistrosDuplicados+"</b></font>");
+					$('#log').append("Total de registros válidos, "+Arquivo.registrosValidos.length+"<br>");
+					$('#validos').html("<font color='black' size='2' face='arial'><b>"+Arquivo.registrosValidos.length+"</b></font>");
+					$('#mensagem').html("");
+			
+					
+					setTimeout(
+					function(){
+						$("#loader").attr('src', 'ic_launcher.jpg');
+					},0);
+		
+				},
+				"ordenaPassageirosTotalViagens" : function(){
+					
+					Arquivo.filtroPassageiros.sort(function(a,b){
+						if (a.activities.length > b.activities.length) {
+							return 1;
+						}
+						if (a.activities.length < b.activities.length) {
+							return -1;
+						}
+						return 0;
+					});
+					
+					
+					
+				},
+				"telaFiltroPassageiros" : function(){
+				
+					if(Arquivo.filtroPassageiros.length>0){
+					
+						$('#log').empty();
+						let strDiv = "<form name='filtro' id='filtro' action='javascript:Arquivo.printFiltroPassageiros();' >";
+						strDiv += "<table border='0' width='100%' border='0' cellpadding='0' cellspacing='0' align='center'>";
+						strDiv += "<tr>";
+						strDiv += "<td colspan='3' align='left'><font color='#FFFFFF' size='2' face='arial'><b>Filtro de Passageiros:</b></font></td>";
+						strDiv += "</tr>";
+						strDiv += "<tr><td colspan='3'>.</td>";
+						strDiv += "</tr>";
+						strDiv += "<tr><td colspan='3'>.</td>";
+						strDiv += "</tr>";
+						strDiv += "<tr>";
+						strDiv += "<td  align='left'><font color='#FFFFFF' size='2' face='arial'><b>Nº Viagens:</b></font></td>";
+						strDiv += "<td  align='left'><select id='qtdeViagens'>";
+						let totalViagemAnterior =0;	
+						for (let i=0; i<Arquivo.filtroPassageiros.length; i++){					
+							if(totalViagemAnterior != Arquivo.filtroPassageiros[i].activities.length){
+								strDiv += "<option value='"+Arquivo.filtroPassageiros[i].activities.length+"'>"+Arquivo.filtroPassageiros[i].activities.length+"</option>";
+							}	
+							totalViagemAnterior = Arquivo.filtroPassageiros[i].activities.length;
+						}
+						strDiv += "</select></td>";
+						strDiv += "<td><font color='#FFFFFF' size='2' face='arial'><b>Filtro de passageiros por Qtde de viagens!</b></font></td>";
+						strDiv += "</tr>";
+						strDiv += "<tr><td colspan='3'>.</td>";
+						strDiv += "</tr>";
+						strDiv += "<tr><td colspan='3'>.</td>";
+						strDiv += "</tr>";
+						strDiv += "<tr>";
+						strDiv += "<td><input type='submit' value='Filtrar'></td>";
+						strDiv += "</tr>";
+						strDiv += "</table>";
+						strDiv += "</form>";
+						$('#log').html(strDiv);
+						
+					}else{
+					
+						$("#mensagem").html("Carregue um arquivo no sistema para poder visualizar os dados!");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '1.0'}, "slow");
+						
+					}
+				
+				},
+				"printFiltroPassageiros": function(){
+				
+					if(Arquivo.filtroPassageiros.length>0){
+					
+						setTimeout(
+						function(){
+							$("#loader").attr('src', 'hairball-loader.gif');
+							$('#mensagem').html("Processando o Arquivo filtrado para exibição..Aguarde....");
+						},0);
+						setTimeout(
+						function(){
+							
+						
+							let strDiv = '<table id="thetable" border="1">';		
+							strDiv += '<tr><td>NOME</td><td>RG</td><td>DATA</td><td>HORARIO</td><td>LINHA</td><td>TIPO PASSAGEM</td></tr>';
+							
+							for (let i=0; i<Arquivo.filtroPassageiros.length; i++) {
+								
+								if(Arquivo.filtroPassageiros[i].activities.length==$('#qtdeViagens :checked').val()){
+								
+									for (let j=0; j<Arquivo.filtroPassageiros[i].activities.length; j++) {
+										/*3ª Regra da Chave*/
+										if(Regras.regras[0].chave=='rg'){
+															
+											strDiv += '<tr>';
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].nome.toUpperCase()+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].rg+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].data+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].horario+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].linha+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].tipoPassagem+"</font></td></td>";
+											strDiv += '</tr>';
+											
+										}else if(Regras.regras[0].chave=='nome'){
+										
+											strDiv += '<tr>';
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].nome.toUpperCase()+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].rg+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].data+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].horario+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].linha+"</font></td></td>";
+											strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].tipoPassagem+"</font></td></td>";
+											strDiv += '</tr>';
+										
+										}else{
+											//nothing
+										}
+									}
+									strDiv += '<tr><td>====</td><td>====</td><td>====</td><td>====</td><td>====</td><td>====</td></tr>';
+								}
+							}
+							strDiv += '</table>';
+							$('#log').empty();
+							$('#log').html(strDiv);
+							$("#loader").attr('src', 'ic_launcher.jpg');
+							$('#mensagem').html("");
+							
+							selectText('log');
+							
+						}, 3000);
+					
+					}else{
+					
+						$("#mensagem").html("Carregue um arquivo no sistema para poder visualizar os dados!");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '1.0'}, "slow");
+						
+					}
+				},
+				"printRegistrosInvalidos" : function(){
+				
+					if(Arquivo.registrosInvalidos.length>0){
+					
+						setTimeout(
+						function(){
+							$("#loader").attr('src', 'hairball-loader.gif');
+							$('#mensagem').html("Processando o Arquivo de registros inválidos para exibição..Aguarde....");
+						},0);
+						setTimeout(
+						function(){
+							
+						
+							let strDiv = '<table id="thetable" border="1">';		
+							strDiv += '<tr><td>NOME</td><td>RG</td><td>DATA</td><td>HORARIO</td><td>LINHA</td><td>TIPO PASSAGEM</td></tr>';
+							
+							for (let i=0; i<Arquivo.registrosInvalidos.length - 1; i++) {
+								
+								let items = Arquivo.registrosInvalidos[i].split(";");
+								strDiv += '<tr>';
+								strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+items[4].toUpperCase()+"</font></td></td>";
+								strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+items[5]+"</font></td></td>";
+								strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+items[0]+"</font></td></td>";
+								strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+items[3]+"</font></td></td>";
+								strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+items[1]+"</font></td></td>";
+								strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+items[7]+"</font></td></td>";
+								strDiv += '</tr>';
+								
+								strDiv += '<tr><td>====</td><td>====</td><td>====</td><td>====</td><td>====</td><td>====</td></tr>';
+								
+							}
+							strDiv += '</table>';
+							$('#log').empty();
+							$('#log').html(strDiv);
+							$("#loader").attr('src', 'ic_launcher.jpg');
+							$('#mensagem').html("");
+							
+							selectText('log');
+							
+						}, 3000);
+					
+					}else{
+					
+						$("#mensagem").html("Carregue um arquivo no sistema para poder visualizar os dados!");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '1.0'}, "slow");
+						
+					}
+					
+				},
+				"printPassageiros" : function(){
+					
+					if(Arquivo.filtroPassageiros.length>0){
+					
+						setTimeout(
+						function(){
+							$("#loader").attr('src', 'hairball-loader.gif');
+							$('#mensagem').html("Processando o Arquivo filtrado para exibição..Aguarde....<br>");
+						},0);
+						
+						setTimeout(
+						function(){
+							
+						
+							let strDiv = '<table>';	
+							let totalViagemAnterior =0;							
+							
+							for (let i=0; i<Arquivo.filtroPassageiros.length; i++) {
+								
+								if(totalViagemAnterior != Arquivo.filtroPassageiros[i].activities.length){
+									strDiv += "<tr><td colspan='6' align='left'><font color='#FFFFFF' size='2' face='arial'><b>Quantidade de Viagens: "+Arquivo.filtroPassageiros[i].activities.length+"</b></font></td></tr>";
+									strDiv += '<tr><td>NOME</td><td>RG</td><td>DATA</td><td>HORARIO</td><td>LINHA</td><td>TIPO PASSAGEM</td></tr>';
+								}
+								
+								for (let j=0; j<Arquivo.filtroPassageiros[i].activities.length; j++) {
+									
+									/*3ª Regra da Chave*/
+									if(Regras.regras[0].chave=='rg'){
+														
+										strDiv += '<tr>';
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].nome.toUpperCase()+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].rg+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].data+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].horario+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].linha+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].tipoPassagem+"</font></td></td>";
+										strDiv += '</tr>';
+										
+									}else if(Regras.regras[0].chave=='nome'){
+									
+										strDiv += '<tr>';
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].nome.toUpperCase()+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].rg+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].data+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].horario+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].linha+"</font></td></td>";
+										strDiv += "<td width='10%' align='left'><font color='#FFFFFF' size='2' face='arial'>"+Arquivo.filtroPassageiros[i].activities[j].tipoPassagem+"</font></td></td>";
+										strDiv += '</tr>';
+									
+									}else{
+										//nothing
+									}
+								}
+								strDiv += "<tr><td colspan='6' align='left'>========================================================================================================================================</td></tr>";
+								totalViagemAnterior = Arquivo.filtroPassageiros[i].activities.length;
+							}
+							strDiv += '</table>';
+							$('#log').empty();
+							$('#log').html(strDiv);
+							$("#loader").attr('src', 'ic_launcher.jpg');
+							$('#mensagem').html("");
+							
+							selectText('log');
+							
+						}, 3000);
+					
+					}else{
+					
+						$("#mensagem").html("Carregue um arquivo no sistema para poder visualizar os dados!");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '0.4'}, "slow");
+						$("#mensagem").animate({opacity: '0.8'}, "slow");
+						$("#mensagem").animate({opacity: '1.0'}, "slow");
+						
+					}
+					
+				}
+			}
+				
+			
+			function abortar(){
+				
+				Arquivo.destroy();
+				totalRegistros = 0;
+				totalRegistrosDuplicados=0;
+				$('#qtdeRegistros').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				$('#validos').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				$('#invalidos').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				$('#duplicados').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				$('#linhaBus').html("");
+				$('#log').empty();
+				$('#mensagem').html("Informações destruidas,carregue um novo arquivo!");
+				exibeSplashScreen();
+			}
+			function limparTela(){
+				
+				$('#log').empty();
+				$('#mensagem').html("Aguardando comando do usuário...");
+				exibeSplashScreen();
+
+			}
+			function inicializaLogin(){
+				
+				$('#validos').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				$('#qtdeRegistros').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				$('#invalidos').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				$('#duplicados').html("<font color='black' size='2' face='arial'><b>0</b></font>");
+				Regras.insereRegras('rg');
+				exibeSplashScreen();
+			}
+			$(document).ready(function(){
+				inicializaLogin();
+			});
+			function selectText(containerid) {
+				if (document.selection) {
+					let range = document.body.createTextRange();
+					range.moveToElementText(document.getElementById(containerid));
+					range.select();
+				} else if (window.getSelection()) {
+					let range = document.createRange();
+					range.selectNode(document.getElementById(containerid));
+					window.getSelection().removeAllRanges();
+					window.getSelection().addRange(range);
+				}
+			}	
+			
+		</script>
+	</head>
+	<body>
+		
+    	<div align='center' id='cenario'><img src='ic_launcher.jpg' width='50' height='50' id='loader'>
+			<div align="center" id="mensagem" style="border:0px solid red; padding: 4px; background-color: #fff; color:#b72d1a; font-size:80%; width:700px; height:10px; z-index:1;overflow: none;" ></div>
+			<div align="center" id="linhaBus" style="border:0px solid red; padding: 4px; background-color: #fff; color:#b72d1a; font-size:80%; width:700px; height:10px; z-index:1;overflow: none;" ></div>
+    	</div>
+		<br>
+    	<table align="center">
+    	<tr>
+		<td><font color='black' size='2' face='arial'><b>Qtde de Registros:</b></font></td>
+		<td id="qtdeRegistros">&nbsp;</td>
+		<td><font color='black' size='2' face='arial'><b> &nbsp; Válidos:&nbsp;</b></font></td>
+    	<td id="validos">&nbsp;</td>
+    	<td><font color='black' size='2' face='arial'><b> &nbsp; Inválidos:&nbsp;</b></font></td>
+    	<td id="invalidos">&nbsp;</td>
+    	<td><font color='black' size='2' face='arial'><b>&nbsp;  Duplicados:&nbsp;</b></font></td>
+    	<td id="duplicados">&nbsp;</td>
+    	</tr>
+    	</table>
+    	
+    	<table align="center">
+    	<tr>
+    	<td>
+    	<div id="log" align="left" style="border:0px solid red; padding: 4px; background-color: #000; color:#FFFFFF; font-size:80%; width:700px; height:300px; z-index:1;overflow: scroll;" ></div>
+    	</td>
+		</tr>
+    	<tr>
+    	<td align="center">
+		<input type='button' value='Inicio' onClick="javascript:exibeSplashScreen();">
+    	<input type='button' value='Ler/Analisar Arquivo' onClick="javascript:carregaArquivo();">
+    	<input type='button' value='Imprimir Passageiros' onClick="javascript:Arquivo.printPassageiros();">
+		<input type='button' value='Filtrar Passageiros' onClick="javascript:Arquivo.telaFiltroPassageiros();">
+    	<input type='button' value='Abortar' onClick="javascript:abortar();">
+    	<input type='button' value='Limpar' onClick="javascript:limparTela();">
+    	</td>
+    	</tr>
+    	<tr>
+    	<td><font color='black' size='2' face='arial' ><b>LER/ANALISAR ARQUIVO -</b></font><font color='silver' size='1' face='arial'><b>Carrega Arquivo na Memória.</b></font>
+    	</td>
+    	</tr>
+    	<tr>
+    	<td><font color='black' size='2' face='arial'><b>IMPRIMIR PASSAGEIROS -</b></font> <font color='silver' size='1' face='arial'><b>Exibe passageiros em ordem crescente de viagens.</B></font>
+    	</td>
+    	</tr>
+		<tr>
+    	<td><font color='black' size='2' face='arial'><b>FILTRAR PASSAGEIROS -</b></font> <font color='silver' size='1' face='arial'><b>Filtra passageiros pelo número de viagens.</B></font>
+    	</td>
+    	</tr>
+    	<tr>
+    	<td><font color='black' size='2' face='arial'><b>ABORTAR -</b></font><font color='silver' size='1' face='arial'><b>Destroi todos os dados</B></font></td>
+    	</tr>
+    	<tr>
+    	<td><font color='black' size='2' face='arial'><b>LIMPAR -</b></font> <font color='silver' size='1' face='arial'><b>Limpar a tela, sem destruir as informações que foram processadas pelo sistema.</B></font>
+    	</td>
+    	</tr>
+    	</table>
+</body>
+</html>
